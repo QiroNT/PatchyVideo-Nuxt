@@ -16,7 +16,7 @@
 -->
 <i18n>
 {
-  "CHS": {
+  "zh-Hans": {
     "LanguageSettings":"语言选项",
     "About":"关于帕琪站",
     "Wiki":"网站维基",
@@ -29,7 +29,7 @@
     "Repositories":"项目仓库",
     "bug_report":"反馈BUG"
   },
-  "ENG": {
+  "en-US": {
     "LanguageSettings":"Languages",
     "About":"About Patchyvideo",
     "Wiki":"Wiki",
@@ -42,7 +42,7 @@
     "Repositories":"Repositories",
     "bug_report":"Report Bugs"
   },
-  "CHT": {
+  "zh-Hant": {
     "LanguageSettings":"語言選項",
     "About":"關於帕琪站",
     "Wiki":"網站維基",
@@ -62,28 +62,30 @@
   <div class="patchyvideo-footer">
     <div class="row">
       <!-- 插图 -->
-      <div class="col-lg-2 col-md-3 d-none d-md-block mx-auto">
+      <div class="col-lg-2 col-md-3 d-none d-lg-block mx-auto">
         <img height="150px" src="~/static/img/footImg.png" />
       </div>
       <!-- 网站上方的链接 -->
-      <div class="col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
+      <div class="col-6 col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
         <p>
           <strong>{{ $t('About') }}</strong>
         </p>
         <a href="https://patchyvideo.wiki" target="_blank">{{ $t('Wiki') }}</a>
-        <a href="https://space.bilibili.com/515657675">{{ $t('OfficialAccount') }}</a>
+        <a href="https://space.bilibili.com/515657675" target="_blank">{{ $t('OfficialAccount') }}</a>
         <a href="https://patchyvideo.wiki/JoinUs" target="_blank">{{ $t('JoinUs') }}</a>
       </div>
-      <div class="col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
+      <div class="col-6 col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
         <p>
           <strong>{{ $t('AboutIPFS') }}</strong>
         </p>
         <nuxt-link to="/ipfs">{{ $t('IPFS') }}</nuxt-link>
-        <a href="https://zh.wikipedia.org/wiki/%E6%98%9F%E9%99%85%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F">{{
-          $t('WhatIsIPFS')
-        }}</a>
+        <a
+          href="https://zh.wikipedia.org/wiki/%E6%98%9F%E9%99%85%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"
+          target="_blank"
+          >{{ $t('WhatIsIPFS') }}</a
+        >
       </div>
-      <div class="col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
+      <div class="col-6 col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-links">
         <p>
           <strong>{{ $t('Codes') }}</strong>
         </p>
@@ -91,30 +93,35 @@
         <a href="https://github.com/zyddnys/PatchyVideo/issues" target="_blank">{{ $t('bug_report') }}</a>
       </div>
       <!-- 语言选项 -->
-      <div class="col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-languageSettings">
+      <div class="col-6 col-lg-2 col-md-3 col-sm-6 mx-auto patchyvideo-languageSettings">
         <p>
           <strong>{{ $t('LanguageSettings') }}</strong>
         </p>
-        <span @click="locale = 'CHS'">简体中文</span>
-        <span @click="locale = 'CHT'">繁體中文</span>
-        <span @click="locale = 'JPN'">日本語</span>
-        <span @click="locale = 'ENG'">English</span>
+        <nuxt-link v-for="locale in availableLocales" :key="locale.code" :to="switchLocalePath(locale.code)">{{
+          locale.name
+        }}</nuxt-link>
       </div>
     </div>
     <!-- 最下部的网站声明 -->
     <div class="patchyvideo-declear">
       <vue-typed-js
-        :strings="this.$pdriver.getYiyanArray()"
+        :strings="this.$pdriver.utils.getYiyanArray()"
         :type-speed="75"
         :back-speed="15"
-        :back-delay="3000"
+        :back-delay="5000"
+        :shuffle="true"
+        :loop="true"
         style="display:block;"
       >
         <span class="typing" style="color:gray;"></span>
       </vue-typed-js>
-      <span>此版本的 PatchyVideo 为非官方版，功能可能有些许差距，请谅解 | 获取最佳体验，请使用电脑访问</span><br />
+      <span
+        >此版本的 PatchyVideo 为测试版，功能可能有些许差距，请谅解<span class="d-lg-none">
+          | 获取最佳体验，请使用电脑访问</span
+        ></span
+      ><br />
       <span>
-        © 2019-{{ new Date().getFullYear() }} PatchyVideo-Nuxt
+        © 2019-{{ new Date().getFullYear() }} PatchyVideo<span v-if="isDevMode()"> | DEV MODE ENABLED</span>
         <!-- © 2019-{{ new Date().getFullYear() }} PatchyVideo(Client:
         <a :href="'https://github.com/suwadaimyojin/patchyvideo-vue/commit/' + commitOfClient">{{ commitOfClient2 }}</a>
         ;Server:
@@ -134,11 +141,11 @@ export default {
       // github 上的前台 commit 地址
       commitOfClient: '',
       // github 上的后台 commit 地址
-      commitOfServer: '',
+      commitOfServer: ''
       // 多语言支持
       // locale: localStorage.getItem('lang'),
       // 吾有一言，请诸位静听
-      yiyan: ''
+      // yiyan: ''
     }
   },
   computed: {
@@ -147,24 +154,25 @@ export default {
     },
     commitOfServer2() {
       return this.commitOfServer.slice(0, 8)
+    },
+    availableLocales() {
+      return this.$pdriver.locale.availableLocales
     }
   },
-  watch: {
-    locale(val) {
-      localStorage.setItem('lang', val)
-      location.reload()
-    }
-  },
+  watch: {},
   created() {
-    this.yiyan = this.$pdriver.getYiyan(true)
-    this.getCommit()
+    // this.yiyan = this.$pdriver.getYiyan(true)
+    // this.getCommit()
   },
   mounted() {
-    setInterval(() => {
-      this.yiyan = this.$pdriver.getYiyan(true)
-    }, 10 * 1000)
+    // setInterval(() => {
+    //   this.yiyan = this.$pdriver.getYiyan(true)
+    // }, 10 * 1000)
   },
   methods: {
+    isDevMode() {
+      return this.$pdriver.dev.isDevMode()
+    },
     // 获取 github 上的 commit 地址
     getCommit() {
       // 获取前端地址
@@ -230,14 +238,14 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.patchyvideo-languageSettings span {
+.patchyvideo-languageSettings a {
   line-height: 22px;
   color: #606266;
   text-decoration: none;
   transition: all 0.4s ease;
   cursor: pointer;
 }
-.patchyvideo-languageSettings span:hover {
+.patchyvideo-languageSettings a:hover {
   color: #409eff;
 }
 @keyframes fade-in {

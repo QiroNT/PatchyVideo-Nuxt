@@ -9,7 +9,7 @@
 
 <i18n>
 {
-  "CHS": {
+  "zh-Hans": {
     "navbar": {
       "index": "首页",
       "playlist": "播放列表",
@@ -37,7 +37,7 @@
       "cancel": "取 消"
     }
   },
-  "ENG": {
+  "en-US": {
     "navbar": {
       "index": "Home",
       "playlist": "Playlists",
@@ -65,7 +65,7 @@
       "cancel": "Cancel"
     }
   },
-  "CHT": {
+  "zh-Hant": {
     "navbar": {
       "index": "首頁",
       "playlist": "播放列表",
@@ -108,7 +108,7 @@
     </el-dialog> -->
     <!-- 网站icon &标题 -->
     <b-navbar-brand href="/">
-      <img class="patchyvideo-icon" src="~/static/img/patchyvideo.svg" /><strong>Patchy Video</strong></b-navbar-brand
+      <img class="patchyvideo-icon" src="~/static/img/patchyvideo.svg" /><strong>PatchyVideo</strong></b-navbar-brand
     >
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -118,9 +118,9 @@
       <b-navbar-nav>
         <b-nav-item href="/home" @click="cleanIptV">{{ $t('navbar.index') }}</b-nav-item>
         <b-nav-item href="/lists">{{ $t('navbar.playlist') }}</b-nav-item>
-        <b-nav-item href="/lists">{{ $t('navbar.postvideo') }}</b-nav-item>
-        <b-nav-item href="/lists">{{ $t('navbar.edittag') }}</b-nav-item>
-        <b-nav-item href="/lists">历史和贡献</b-nav-item>
+        <b-nav-item href="/postvideo">{{ $t('navbar.postvideo') }}</b-nav-item>
+        <b-nav-item href="/edittag">{{ $t('navbar.edittag') }}</b-nav-item>
+        <b-nav-item href="/logscontributes">历史和贡献</b-nav-item>
       </b-navbar-nav>
       <!-- 右侧导航栏 -->
       <b-navbar-nav class="ml-auto">
@@ -421,10 +421,10 @@ export default {
     ConvertLangRes(langs, hastran = true) {
       if (!langs) return
       const LangList = [
-        { id: 1, lang: 'CHS' },
-        { id: 2, lang: 'CHT' },
-        { id: 5, lang: 'ENG' },
-        { id: 10, lang: 'JPN' }
+        { id: 1, lang: 'zh-Hans' },
+        { id: 2, lang: 'zh-Hant' },
+        { id: 5, lang: 'en-US' },
+        { id: 10, lang: 'ja' }
       ]
       const level = [10, 5, 1, 2]
       let Lang = ''

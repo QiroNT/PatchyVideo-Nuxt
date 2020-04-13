@@ -2,7 +2,7 @@
 
 <i18n>
     {
-    "CHS": {
+    "zh-Hans": {
     "page_count": "显示 {count} / {maxcount} 个视频",
     "no_result": "没有搜索到视频",
     "show_deleted": "显示已失效视频",
@@ -17,7 +17,7 @@
     "syntax_error_not": "所输入的查询不能与NOT连用！",
     "see_uploaders":"查看上传者"
     },
-    "ENG": {
+    "en-US": {
     "page_count": "Showing {count} / {maxcount} videos",
     "no_result": "No video found",
     "show_deleted": "Show deleted videos",
@@ -32,7 +32,7 @@
     "syntax_error_not": "NOT cannot be used here",
     "see_uploaders":"See Uploaders"
     },
-    "CHT": {
+    "zh-Hant": {
     "page_count": "顯示 {count} / {maxcount} 個視頻",
     "no_result": "沒有搜索到視頻",
     "show_deleted": "顯示已失效視頻",
@@ -88,10 +88,18 @@
               <div class="row video-list-header">
                 <!-- 数量显示 -->
                 <div class="col-auto">
-                  <span v-if="videoListData.maxcount">{{
-                    $t('page_count', { count: videoListData.count2, maxcount: videoListData.maxcount })
-                  }}</span>
-                  <span v-else>{{ $t('no_result') }}</span>
+                  <span v-if="videoListOptions.loading">
+                    <b-spinner small></b-spinner
+                    ><vue-typed-js :strings="['少女祈祷中']" :type-speed="100" style="display:inline-block;"
+                      ><span class="typing"></span
+                    ></vue-typed-js>
+                  </span>
+                  <span v-else>
+                    <span v-if="videoListData.maxcount">{{
+                      $t('page_count', { count: videoListData.count2, maxcount: videoListData.maxcount })
+                    }}</span>
+                    <span v-else>{{ $t('no_result') }}</span>
+                  </span>
                 </div>
                 <!-- 是否显示已删除视频 -->
                 <!-- <div class="col-auto d-none d-lg-block">
@@ -317,7 +325,7 @@ export default {
       return !!this.$store.state.username
     },
     toGMT(timeStamp) {
-      return this.$pdriver.toGMT(timeStamp, this.GMT)
+      return this.$pdriver.utils.toGMT(timeStamp, this.GMT)
     },
     getListVideo(e, count) {
       // 先使页面处于加载状态
@@ -378,7 +386,7 @@ export default {
           }
         })
         .catch((e) => {
-          this.videoListData.errorAlert = '获取视频失败：' + e
+          this.videoListData.errorAlert = '获取视频失败：' + e.message
           this.videoListData.showErrorAlert = true
         })
     }

@@ -5,15 +5,15 @@ function rsReject(res) {
   if (res) {
     switch (res.status) {
       case 502:
-        return new Error('巴瓦鲁魔法服务器正在跃迁中')
+        return new Error('巴瓦鲁魔法服务器正在跃迁中(502 Bad Gateway)')
       case 500:
-        return new Error('巴瓦鲁魔法服务器哮喘犯了')
+        return new Error('巴瓦鲁魔法服务器哮喘犯了(500 Internal Server Error)')
       case 503:
-        return new Error('巴瓦鲁魔法服务器正在睡觉')
+        return new Error('巴瓦鲁魔法服务器正在睡觉(503 Service Unavailable)')
       case 403:
-        return new Error('你被帕秋莉禁止进入巴瓦鲁魔法服务器')
+        return new Error('你被帕秋莉禁止进入巴瓦鲁魔法服务器(403 Forbidden)')
       default:
-        return new Error('巴瓦鲁魔法服务器被隙间了')
+        return new Error('巴瓦鲁魔法服务器被隙间了(Unknown Error)')
       case 404:
         return new Error('')
     }

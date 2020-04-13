@@ -65,8 +65,8 @@ export default {
       'nuxt-i18n',
       {
         vueI18nLoader: true,
-        defaultLocale: 'CHS',
-        locales: ['CHS', 'CHT']
+        defaultLocale: 'zh-Hans',
+        locales: ['zh-Hans', 'zh-Hant', 'ja', 'en-US']
       }
     ]
   ],
