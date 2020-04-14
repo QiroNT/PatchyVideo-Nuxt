@@ -150,9 +150,14 @@
                           tag="a"
                         >
                           <!-- <img :src="'/images/covers/' + item.item.cover_image" height="100%" /> -->
+                          <bilibili-cover
+                            v-if="item.item.site === 'bilibili'"
+                            :aid="parseInt(item.item.unique_id.replace('bilibili:av', ''))"
+                            :cover-image="item.item.cover_image"
+                          ></bilibili-cover>
                           <b-aspect
+                            v-else
                             aspect="8:5"
-                            class="Imgcover"
                             :style="
                               'background:url(/images/covers/' +
                                 item.item.cover_image +
@@ -163,7 +168,7 @@
                       </div>
                     </div>
                     <!-- 视频信息 -->
-                    <div class="col video-detail">
+                    <div class="col-sm-8 col-lg-9 video-detail">
                       <!-- 图标和标题 -->
                       <div class="title-div">
                         <img
@@ -171,7 +176,7 @@
                           width="16px"
                           style="display:inline;"
                         />
-                        <p>
+                        <p class="title-p">
                           <nuxt-link
                             target="_blank"
                             :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
@@ -181,7 +186,10 @@
                         </p>
                       </div>
                       <!-- 简介 -->
-                      <p class="d-none d-md-block" :title="toGMT(item.item.upload_time.$date) + '\n' + item.item.desc">
+                      <p
+                        class="d-none d-md-block detail-p"
+                        :title="toGMT(item.item.upload_time.$date) + '\n' + item.item.desc"
+                      >
                         {{ item.item.desc }}
                       </p>
                       <!-- 底部信息 -->
@@ -218,12 +226,14 @@
 
 <script>
 import leftBar from '~/components/page/home/LeftBar.vue'
+import bilibiliCover from '~/components/page/home/covers/bilibili.vue'
 
 // import { copyToClipboardText } from '~/static/js/generic'
 export default {
   layout: 'page',
   components: {
-    leftBar
+    leftBar,
+    bilibiliCover
   },
   data() {
     // this.$i18n.locale = localStorage.getItem('lang')
@@ -398,7 +408,8 @@ export default {
       if (this.videoListOptions.visibleSites.length === 0) {
         this.videoListOptions.visibleSites = ['']
       }
-    }
+    },
+    showHover() {}
   }
 }
 </script>
@@ -469,17 +480,23 @@ export default {
     transition: all 0.3s ease;
 
     .title-div {
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      p {
+      @media (min-width: 768px) {
+        white-space: nowrap;
+      }
+      @media (max-width: 768px) {
+        line-height: 1.15rem;
+        max-height: 2.3rem;
+      }
+      .title-p {
         display: inline;
       }
       img {
         vertical-align: middle;
       }
     }
-    p {
+    .detail-p {
       display: block;
       width: 90%;
       font-size: 1rem;

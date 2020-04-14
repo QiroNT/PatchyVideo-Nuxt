@@ -31,7 +31,7 @@ Others:
 - VS Code - Code editing
 - Prettier - Code formatting
 - ESLint - Linting code
-- ipfs - Store (some) videos
+- IPFS - Store (some) videos
 
 ## Build Setup
 
