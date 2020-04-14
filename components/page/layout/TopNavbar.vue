@@ -116,11 +116,11 @@
     <b-collapse id="nav-collapse" is-nav>
       <!-- 左侧导航栏 -->
       <b-navbar-nav>
-        <b-nav-item href="/home" @click="cleanIptV">{{ $t('navbar.index') }}</b-nav-item>
-        <b-nav-item href="/lists">{{ $t('navbar.playlist') }}</b-nav-item>
-        <b-nav-item href="/postvideo">{{ $t('navbar.postvideo') }}</b-nav-item>
-        <b-nav-item href="/edittag">{{ $t('navbar.edittag') }}</b-nav-item>
-        <b-nav-item href="/logscontributes">历史和贡献</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/home' })" @click="cleanIptV">{{ $t('navbar.index') }}</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/lists' })">{{ $t('navbar.playlist') }}</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/postvideo' })">{{ $t('navbar.postvideo') }}</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/edittag' })">{{ $t('navbar.edittag') }}</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/logscontributes' })">历史和贡献</b-nav-item>
       </b-navbar-nav>
       <!-- 右侧导航栏 -->
       <b-navbar-nav class="ml-auto">

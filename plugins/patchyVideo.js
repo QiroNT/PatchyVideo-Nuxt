@@ -45,7 +45,7 @@ function listVideo(config) {
     return new Promise((resolve, reject) => {
       axios({
         method: 'post',
-        url: 'be/queryvideo.do',
+        url: '/be/queryvideo.do',
         data: cfg
       })
         .then((result) => {

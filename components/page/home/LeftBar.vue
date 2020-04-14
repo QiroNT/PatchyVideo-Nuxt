@@ -75,9 +75,9 @@ export default {
     // 点击标签显示标签的搜索结果
     gotoHome(key) {
       if (key) {
-        this.$router.push({ path: '/home', query: { keyword: key } })
+        this.$router.push(this.localePath({ path: '/home', query: { keyword: key } }))
       } else {
-        this.$router.push({ path: '/home' })
+        this.$router.push(this.localePath({ path: '/home' }))
       }
     },
     freshOverflow() {

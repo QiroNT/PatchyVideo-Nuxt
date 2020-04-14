@@ -6,7 +6,7 @@ const availableLocales = [
 ]
 
 function getPcode(code) {
-  for (const i in availableLocales) {
+  for (const i of availableLocales) {
     if (i.code === code) return i.pcode
   }
   return 'CHS'

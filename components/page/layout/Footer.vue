@@ -78,7 +78,7 @@
         <p>
           <strong>{{ $t('AboutIPFS') }}</strong>
         </p>
-        <nuxt-link to="/ipfs">{{ $t('IPFS') }}</nuxt-link>
+        <nuxt-link :to="localePath({ path: '/ipfs' })">{{ $t('IPFS') }}</nuxt-link>
         <a
           href="https://zh.wikipedia.org/wiki/%E6%98%9F%E9%99%85%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"
           target="_blank"

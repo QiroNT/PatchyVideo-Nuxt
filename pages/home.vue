@@ -144,7 +144,11 @@
                     <!-- 封面图片 -->
                     <div class="col-sm-4 col-lg-3">
                       <div class="video-thumbnail">
-                        <nuxt-link target="_blank" :to="{ path: '/video', query: { id: item._id.$oid } }" tag="a">
+                        <nuxt-link
+                          target="_blank"
+                          :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
+                          tag="a"
+                        >
                           <!-- <img :src="'/images/covers/' + item.item.cover_image" height="100%" /> -->
                           <b-aspect
                             aspect="8:5"
@@ -168,7 +172,12 @@
                           style="display:inline;"
                         />
                         <p>
-                          <a target="_blank" :href="item.item.url" tag="a">{{ item.item.title }}</a>
+                          <nuxt-link
+                            target="_blank"
+                            :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
+                            tag="a"
+                            >{{ item.item.title }}</nuxt-link
+                          >
                         </p>
                       </div>
                       <!-- 简介 -->
