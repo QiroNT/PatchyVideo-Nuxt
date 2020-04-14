@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import yiyan from '~/plugins/patchyDriver/yiyan'
+import locale from '~/plugins/patchyDriver/locale'
 
 const yiyana = []
 yiyan.split(/(\r\n|\r|\n)/g).forEach((value) => {
@@ -62,23 +63,32 @@ function isDevMode() {
   return process.env.NODE_ENV === 'development'
 }
 
-const availableLocales = [
-  { code: 'zh-Hans', name: '简体中文', pcode: 'CHS' },
-  { code: 'zh-Hant', name: '繁體中文', pcode: 'CHT' },
-  { code: 'ja', name: '日本語', pcode: 'JPN' },
-  { code: 'en-US', name: 'English', pcode: 'ENG' }
-]
+function getTextSize(text, fontSize, fontFamily) {
+  const span = document.createElement('span')
+  const result = {}
+  result.width = span.offsetWidth
+  result.height = span.offsetHeight
+  span.style.visibility = 'hidden'
+  span.style.fontSize = fontSize || ''
+  span.style.fontFamily = fontFamily || ''
+  span.style.display = 'inline-block'
+  document.body.appendChild(span)
+  span.textContent = text
+  result.width = parseFloat(window.getComputedStyle(span).width) - result.width
+  result.height = parseFloat(window.getComputedStyle(span).height) - result.height
+  document.body.removeChild(span)
+  return result
+}
 
 const patchyDriver = {}
 patchyDriver.install = function(Vue, options) {
   Vue.prototype.$pdriver = {
-    locale: {
-      availableLocales
-    },
+    locale,
     utils: {
       toGMT,
       getYiyan,
-      getYiyanArray
+      getYiyanArray,
+      getTextSize
     },
     dev: {
       isDevMode

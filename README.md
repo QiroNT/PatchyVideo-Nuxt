@@ -16,6 +16,8 @@ Original repository is [here (https://github.com/suwadaimyojin/patchyvideo-vue)]
 
 ## This repository is using:
 
+Packages:
+
 - Nuxt.js - Base
 - Bootstrap-Vue - Framework
 - @nuxtjs/Axios - HTTP Client
@@ -23,6 +25,13 @@ Original repository is [here (https://github.com/suwadaimyojin/patchyvideo-vue)]
 - nuxt-i18n - I18n
 - vue-typed-js - Footer "yiyan" typing
 - LESS for pages and SCSS for Bootstrap
+
+Others:
+
+- VS Code - Code editing
+- Prettier - Code formatting
+- ESLint - Linting code
+- ipfs - Store (some) videos
 
 ## Build Setup
 

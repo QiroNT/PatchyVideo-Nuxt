@@ -56,32 +56,11 @@
     <b-tabs v-model="activeTab" card nav-class="tab-class">
       <!-- 主页 -->
       <b-tab :title="labelInfo[0]" active lazy>
-        <!-- 切换按钮 -->
-        <!-- <b-icon class="changeLineIcon" :icon="flag ? list : grid" @click="changeLine"></b-icon> -->
-        <!-- 站点选择 -->
-        <!-- <div class="tag-box d-none d-lg-block">
-          <h4>
-            <span
-              :class="'badge ' + (visibleSites.includes('') ? 'badge-info' : 'badge-secondary')"
-              style="margin:0 5px"
-              @click="(e) => onSitesChange()"
-              >全部</span
-            >
-            <span
-              v-for="item in allSites"
-              :key="item.id"
-              :class="'badge ' + (visibleSites.includes(item.id) ? 'badge-info' : 'badge-secondary')"
-              style="margin:0 5px"
-              @click="(e) => onSitesChange(item.id)"
-              >{{ item.text }}</span
-            >
-          </h4>
-        </div> -->
         <!-- 正文 -->
         <div class="container">
           <div class="row">
             <!-- 左栏（热门标签） -->
-            <div class="col-xl-3 d-none d-xl-block">HoTag</div>
+            <div class="col-xl-3 d-none d-xl-block"><left-bar :tags="videoListData.tags" /></div>
             <!-- 视频区 -->
             <div class="col-xl-9">
               <!-- 播放列表抬头 -->
@@ -101,22 +80,10 @@
                     <span v-else>{{ $t('no_result') }}</span>
                   </span>
                 </div>
-                <!-- 是否显示已删除视频 -->
-                <!-- <div class="col-auto d-none d-lg-block">
-                  <b-form-checkbox v-model="checked" class="show-deleted">{{ $t('show_deleted') }}</b-form-checkbox>
-                </div> -->
-                <!-- 黑名单提示 -->
-                <!-- <div class="col-auto d-none d-xl-block">
-                  <span class="blacklist-prompt">{{ $t('blacklist_prompt') }}</span>
-                </div> -->
-                <!-- 视频排列顺序 -->
-                <!-- <div class="col-auto">
-                  <b-form-select v-model="couponSelected" :options="options" size="md"></b-form-select>
-                </div> -->
                 <!-- 设置按钮 -->
                 <b-icon v-b-toggle.video-showing-settings-sidebar icon="gear"></b-icon>
                 <b-sidebar id="video-showing-settings-sidebar" title="显示设定" shadow>
-                  <div class="px-3 py-2">
+                  <div class="p-3">
                     <!-- 黑名单提示 -->
                     <p>
                       <span class="blacklist-prompt">{{ $t('blacklist_prompt') }}</span>
@@ -135,7 +102,7 @@
                         :class="
                           'badge ' + (videoListOptions.visibleSites.includes('') ? 'badge-info' : 'badge-secondary')
                         "
-                        style="margin:0 5px"
+                        style="cursor:pointer;margin:0 5px"
                         @click="(e) => onSitesChange()"
                         >全部</span
                       >
@@ -144,10 +111,10 @@
                         :key="item.id"
                         :class="
                           'badge ' +
-                            (videoListOptions.visibleSites.includes(item.id) ? 'badge-info' : 'badge-secondary')
+                            (videoListOptions.visibleSites.includes(item.value) ? 'badge-info' : 'badge-secondary')
                         "
-                        style="margin:0 5px"
-                        @click="(e) => onSitesChange(item.id)"
+                        style="cursor:pointer;margin:0 5px"
+                        @click="(e) => onSitesChange(item.value)"
                         >{{ item.text }}</span
                       >
                     </div>
@@ -155,11 +122,12 @@
                     <b-form-checkbox v-model="videoListOptions.checked" class="show-deleted">{{
                       $t('show_deleted')
                     }}</b-form-checkbox>
+                    <b-button variant="primary" block @click="getListVideo()">应用</b-button>
                   </div>
                 </b-sidebar>
               </div>
               <!-- 播放列表正文 -->
-              <div>
+              <div class="video-list">
                 <b-alert
                   variant="danger"
                   dismissible
@@ -216,6 +184,7 @@
                   </div>
                 </div>
 
+                <!-- 分页器 -->
                 <b-pagination
                   v-model="videoListOptions.page"
                   limit="9"
@@ -237,14 +206,13 @@
 </template>
 
 <script>
-// import left_navbar from '~/components/LeftNavbar.vue'
-// import leftNavbar from '~/components/page/home/LeftNavbar.vue'
+import leftBar from '~/components/page/home/LeftBar.vue'
 
 // import { copyToClipboardText } from '~/static/js/generic'
 export default {
   layout: 'page',
   components: {
-    // leftNavbar
+    leftBar
   },
   data() {
     // this.$i18n.locale = localStorage.getItem('lang')
@@ -316,7 +284,7 @@ export default {
     }
   },
   created() {
-    this.getListVideo(this.videoListOptions.page, this.videoListOptions.count)
+    this.getListVideo()
   },
   mounted() {},
   updated() {},
@@ -327,13 +295,13 @@ export default {
     toGMT(timeStamp) {
       return this.$pdriver.utils.toGMT(timeStamp, this.GMT)
     },
-    getListVideo(e, count) {
+    getListVideo() {
       // 先使页面处于加载状态
-      this.loading = true
+      this.videoListOptions.loading = true
       this.$pvideo
         .listVideo({
-          page: e,
-          page_size: count,
+          page: this.videoListOptions.page,
+          page_size: this.videoListOptions.count,
           order: this.videoListOptions.couponSelected,
           hide_placeholder: !this.videoListOptions.checked,
           visibleSites: this.videoListOptions.visibleSites,
@@ -342,7 +310,7 @@ export default {
         .then((result) => {
           this.videoListData.maxcount = result.data.data.count
           // 取得总页数制作分页
-          this.videoListData.maxpage = Math.ceil(result.data.data.count / count)
+          this.videoListData.maxpage = Math.ceil(result.data.data.count / this.videoListOptions.count)
           if (this.videoListData.maxpage < this.videoListOptions.page) {
             this.videoListOptions.page = 1
           }
@@ -388,7 +356,25 @@ export default {
         .catch((e) => {
           this.videoListData.errorAlert = '获取视频失败：' + e.message
           this.videoListData.showErrorAlert = true
+          this.videoListOptions.loading = false
         })
+    },
+    onSitesChange(id = '') {
+      if (id === '') {
+        this.videoListOptions.visibleSites = ['']
+      } else if (this.videoListOptions.visibleSites.includes(id)) {
+        const index = this.videoListOptions.visibleSites.indexOf(id)
+        this.videoListOptions.visibleSites.splice(index, 1)
+      } else {
+        this.videoListOptions.visibleSites.push(id)
+        const index = this.videoListOptions.visibleSites.indexOf('')
+        if (index > -1) {
+          this.videoListOptions.visibleSites.splice(index, 1)
+        }
+      }
+      if (this.videoListOptions.visibleSites.length === 0) {
+        this.videoListOptions.visibleSites = ['']
+      }
     }
   }
 }
@@ -519,6 +505,10 @@ export default {
 .fa-copy:hover {
   color: olive;
   cursor: pointer;
+}
+
+.video-list {
+  min-height: 600px;
 }
 
 .video-list-header p {
