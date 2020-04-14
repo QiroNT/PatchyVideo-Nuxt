@@ -60,7 +60,9 @@
         <div class="container">
           <div class="row">
             <!-- 左栏（热门标签） -->
-            <div class="col-xl-3 d-none d-xl-block"><left-bar :tags="videoListData.tags" /></div>
+            <div class="col-xl-3 d-none d-xl-block">
+              <left-bar :title="videoListOptions.ifSearch ? '相关标签' : '热门标签'" :tags="videoListData.tags" />
+            </div>
             <!-- 视频区 -->
             <div class="col-xl-9">
               <!-- 播放列表抬头 -->
@@ -281,6 +283,7 @@ export default {
   watch: {
     $route(newV, oldV) {
       this.activeTab = 0
+      this.getListVideo()
     }
   },
   created() {
@@ -298,8 +301,11 @@ export default {
     getListVideo() {
       // 先使页面处于加载状态
       this.videoListOptions.loading = true
+      this.videoListOptions.ifSearch = !!this.$route.query.keyword
       this.$pvideo
         .listVideo({
+          searchKeyWord: this.$route.query.keyword || '',
+          qtype: this.$route.query.qtype || 'tag',
           page: this.videoListOptions.page,
           page_size: this.videoListOptions.count,
           order: this.videoListOptions.couponSelected,
@@ -316,29 +322,37 @@ export default {
           }
           this.$store.commit('getMaxPage', this.videoListData.maxpage)
           this.videoListData.listvideo = result.data.data.videos
-
           /* 排序处理 */
-
           // 获得热门标签
           const tags = result.data.data.tags
-          const tagswithcount = result.data.data.tag_pops
-          // 排序热门标签
-          // let ntags = {}
-          // tagswithcount = Object.keys(tagswithcount)
-          //   .sort((a, b) => tagswithcount[b] - tagswithcount[a])
-          //   .forEach((key) => {
-          //     ntags[key] = tags[key]
-          //   })
-          const ntags = []
-          for (const i in tags) {
-            ntags.push({
-              name: i,
-              tagType: tags[i],
-              tagCount: tagswithcount[i]
-            })
+          if (result.data.data.tag_pops) {
+            const tagswithcount = result.data.data.tag_pops
+            // 排序热门标签
+            // let ntags = {}
+            // tagswithcount = Object.keys(tagswithcount)
+            //   .sort((a, b) => tagswithcount[b] - tagswithcount[a])
+            //   .forEach((key) => {
+            //     ntags[key] = tags[key]
+            //   })
+            const ntags = []
+            for (const i in tags) {
+              ntags.push({
+                name: i,
+                tagType: tags[i],
+                tagCount: tagswithcount[i]
+              })
+            }
+            this.videoListData.tags = ntags
+          } else {
+            const ntags = []
+            for (const i in tags) {
+              ntags.push({
+                name: i,
+                tagType: tags[i]
+              })
+            }
+            this.videoListData.tags = ntags
           }
-
-          this.videoListData.tags = ntags
           /* 处理结束 */
 
           // this.tags = result.data.data.tags;

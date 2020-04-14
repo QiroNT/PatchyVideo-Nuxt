@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>热门标签</h1>
+    <h1>{{ title }}</h1>
     <ul class="tag-ul">
       <li v-for="(val, key) in tags" :key="key" class="tag">
         <div :id="'lb-tag-item-' + key" class="tag belong-to-home">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <b-tooltip
-          :disabled="overflowed.indexOf(key) == -1"
+          :disabled="overflowed.indexOf(val.name) == -1"
           :target="'lb-tag-item-' + key"
           variant="light"
           placement="left"
@@ -32,6 +32,12 @@
 <script>
 export default {
   props: {
+    title: {
+      type: String,
+      default() {
+        return '热门标签'
+      }
+    },
     tags: {
       type: Array,
       default() {
@@ -69,9 +75,7 @@ export default {
     // 点击标签显示标签的搜索结果
     gotoHome(key) {
       if (key) {
-        this.$router.push({ path: '/home', query: { keyword: key } }).catch((err) => {
-          return err
-        })
+        this.$router.push({ path: '/home', query: { keyword: key } })
       } else {
         this.$router.push({ path: '/home' })
       }

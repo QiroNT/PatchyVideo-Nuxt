@@ -31,28 +31,55 @@ function listVideo(config) {
     }
     sites = 'ANY(' + sites + ')'
   }
-  const cfg = {
-    page: config.page,
-    page_size: config.page_size,
-    order: config.order,
-    hide_placeholder: config.hide_placeholder,
-    additional_constraint: sites,
-    lang: locale.getPcode(config.locale)
-  }
-  return new Promise((resolve, reject) => {
-    axios({
-      method: 'post',
-      url: '/be/listvideo.do',
-      data: cfg
+  if (config.searchKeyWord) {
+    const cfg = {
+      query: config.searchKeyWord,
+      qtype: config.qtype,
+      page: config.page,
+      page_size: config.page_size,
+      order: config.order,
+      hide_placeholder: config.hide_placeholder,
+      additional_constraint: sites,
+      lang: locale.getPcode(config.locale)
+    }
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'post',
+        url: 'be/queryvideo.do',
+        data: cfg
+      })
+        .then((result) => {
+          resolve(result)
+        })
+        .catch((e) => {
+          const res = e.response
+          reject(rsReject(res) || e)
+        })
     })
-      .then((result) => {
-        resolve(result)
+  } else {
+    const cfg = {
+      page: config.page,
+      page_size: config.page_size,
+      order: config.order,
+      hide_placeholder: config.hide_placeholder,
+      additional_constraint: sites,
+      lang: locale.getPcode(config.locale)
+    }
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'post',
+        url: '/be/listvideo.do',
+        data: cfg
       })
-      .catch((e) => {
-        const res = e.response
-        reject(rsReject(res) || e)
-      })
-  })
+        .then((result) => {
+          resolve(result)
+        })
+        .catch((e) => {
+          const res = e.response
+          reject(rsReject(res) || e)
+        })
+    })
+  }
 }
 
 const patchyVideo = {}
