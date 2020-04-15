@@ -5,6 +5,7 @@
     ref="cdiv"
     @mouseenter="
       (e) => {
+        width = $refs.cdiv.clientWidth
         hover = true
       }
     "
@@ -15,8 +16,10 @@
     "
     @mousemove="onMouseMove"
   >
-    <b-aspect v-if="hover" aspect="8:5" style="overflow:hidden">
-      <div class="progress-bar"><span ref="pspan" :style="'width:' + progress + '%'"></span></div>
+    <b-aspect v-if="hover && loadStatus" aspect="16:9" style="overflow:hidden">
+      <div class="progress-bar" :style="'height:' + prh + 'px;border-width: ' + Math.floor((prh - 2) / 2) + 'px 8px;'">
+        <span ref="pspan" :style="'width:' + progress + '%'"></span>
+      </div>
       <div
         v-if="loadStatus"
         class="bilibili-cover"
@@ -32,11 +35,19 @@
             'px;width:' +
             width +
             'px;height:' +
-            (height - 11) +
+            (width / 16) * 9 +
             'px'
         "
       ></div>
     </b-aspect>
+    <div v-else-if="hover">
+      <b-overlay :show="true" rounded="sm">
+        <b-aspect
+          aspect="8:5"
+          :style="'background:url(/images/covers/' + coverImage + ') center center no-repeat;background-size:100% 100%'"
+        ></b-aspect>
+      </b-overlay>
+    </div>
     <b-aspect
       v-else
       aspect="8:5"
@@ -67,9 +78,14 @@ export default {
       y: 0,
       size: 0,
       width: 0,
-      height: 0,
       hover: false,
-      data: null
+      data: null,
+      prefresh: null
+    }
+  },
+  computed: {
+    prh() {
+      return (this.width / 8) * 5 - (this.width / 16) * 9
     }
   },
   watch: {
@@ -84,10 +100,10 @@ export default {
               this.data = result.data.data
             }
             this.loadStatus = true
-            this.$nextTick(function() {
-              this.width = this.$refs.cdiv.clientWidth
-              this.height = this.$refs.cdiv.clientHeight
-            })
+            if (this.prefresh && this.hover) {
+              this.fresh(this.prefresh)
+              this.prefresh = null
+            }
           })
           .catch((e) => {
             this.loadStatus = false
@@ -96,20 +112,19 @@ export default {
     }
   },
   methods: {
-    onMouseOver(e) {
-      this.hover = true
-    },
-    onMouseOut(e) {
-      this.hover = false
-    },
     onMouseMove(e) {
       if (this.loadStatus && this.data) {
-        const i = Math.floor((e.offsetX / this.width) * this.data.index.length)
-        const n = (this.data.img_y_size / this.data.img_x_size) * this.width
-        this.progress = Math.floor((e.offsetX / this.width) * 100)
-        this.x = (-i % this.data.img_x_len) * this.width
-        this.y = -Math.floor(i / this.data.img_x_len) * n
+        this.fresh(e)
+      } else {
+        this.prefresh = e
       }
+    },
+    fresh(e) {
+      const i = Math.floor((e.offsetX / this.width) * this.data.index.length)
+      const n = (this.data.img_y_size / this.data.img_x_size) * this.width
+      this.progress = Math.floor((e.offsetX / this.width) * 100)
+      this.x = (-i % this.data.img_x_len) * this.width
+      this.y = -Math.floor(i / this.data.img_x_len) * n
     }
   }
 }
@@ -120,8 +135,6 @@ export default {
   left: 0;
 }
 .progress-bar {
-  height: 13px;
-  border-width: 5px 8px 6px 8px;
   border-style: solid;
   border-color: #000;
   background: #444;
