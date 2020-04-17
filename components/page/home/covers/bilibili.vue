@@ -16,7 +16,7 @@
     "
     @mousemove="onMouseMove"
   >
-    <b-aspect v-if="hover && loadStatus" aspect="16:9" style="overflow:hidden">
+    <b-aspect v-if="hover && loadStatus && !error" aspect="16:9" style="overflow:hidden">
       <div class="progress-bar" :style="'height:' + prh + 'px;border-width: ' + Math.floor((prh - 2) / 2) + 'px 8px;'">
         <span ref="pspan" :style="'width:' + progress + '%'"></span>
       </div>
@@ -40,7 +40,7 @@
         "
       ></div>
     </b-aspect>
-    <div v-else-if="hover">
+    <div v-else-if="hover && !loadStatus">
       <b-overlay :show="true" rounded="sm">
         <b-aspect
           aspect="8:5"
@@ -48,11 +48,15 @@
         ></b-aspect>
       </b-overlay>
     </div>
-    <b-aspect
-      v-else
-      aspect="8:5"
-      :style="'background:url(/images/covers/' + coverImage + ') center center no-repeat;background-size:100% 100%'"
-    ></b-aspect>
+    <b-overlay v-else :show="hover && !!error" style="overflow:hidden">
+      <template v-slot:overlay
+        ><div class="text-center">{{ error || '未知错误' }}</div></template
+      >
+      <b-aspect
+        aspect="8:5"
+        :style="'background:url(/images/covers/' + coverImage + ') center center no-repeat;background-size:100% 100%'"
+      ></b-aspect>
+    </b-overlay>
   </div>
 </template>
 
@@ -80,6 +84,7 @@ export default {
       width: 0,
       hover: false,
       data: null,
+      error: null,
       prefresh: null
     }
   },
@@ -98,12 +103,14 @@ export default {
           .then((result) => {
             if (result.data.code === 0 && result.data.data) {
               this.data = result.data.data
+              if (this.prefresh && this.hover) {
+                this.fresh(this.prefresh)
+                this.prefresh = null
+              }
+            } else {
+              this.error = result.data.message
             }
             this.loadStatus = true
-            if (this.prefresh && this.hover) {
-              this.fresh(this.prefresh)
-              this.prefresh = null
-            }
           })
           .catch((e) => {
             this.loadStatus = false

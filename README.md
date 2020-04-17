@@ -1,9 +1,9 @@
 # PatchyVideo-Nuxt
 
 <p>
-  <img alt="Contributors" src="https://img.shields.io/github/contributors/Ntzimu/PatchyVideo-Nuxt">
-  <img alt="Commit activity" src="https://img.shields.io/github/commit-activity/m/Ntzimu/PatchyVideo-Nuxt">
-  <img alt="Code size" src="https://img.shields.io/github/languages/code-size/Ntzimu/PatchyVideo-Nuxt">
+  <img alt="Contributors" src="https://img.shields.io/github/contributors/Ntzimu/PatchyVideo-Nuxt" />
+  <img alt="Commit activity" src="https://img.shields.io/github/commit-activity/m/Ntzimu/PatchyVideo-Nuxt" />
+  <img alt="Code size" src="https://img.shields.io/github/languages/code-size/Ntzimu/PatchyVideo-Nuxt" />
   <img alt="Version" src="https://img.shields.io/github/package-json/v/Ntzimu/PatchyVideo-Nuxt" />
   <img alt="License" src="https://img.shields.io/github/license/Ntzimu/PatchyVideo-Nuxt" />
 </p>
@@ -31,7 +31,7 @@ Others:
 - VS Code - Code editing
 - Prettier - Code formatting
 - ESLint - Linting code
-- IPFS - Store (some) videos
+- IPFS - Publish (some) videos
 
 ## Build Setup
 
