@@ -124,17 +124,12 @@
       </b-navbar-nav>
       <!-- 右侧导航栏 -->
       <b-navbar-nav class="ml-auto">
-        <b-nav-form>
+        <b-nav-form @submit.stop.prevent="gotoHome">
           <b-input-group size="sm" class="top-search-bar">
             <b-input-group-prepend class="align-items-center ml-2 mr-2">
               <b-icon icon="search"></b-icon>
             </b-input-group-prepend>
-            <b-form-input
-              v-model="iptVal"
-              placeholder="搜索视频"
-              class="search-input"
-              @keyup.enter="gotoHome"
-            ></b-form-input>
+            <b-form-input v-model="iptVal" placeholder="搜索视频" class="search-input"></b-form-input>
             <b-input-group-append>
               <b-form-select
                 v-model="searchType"
@@ -156,8 +151,8 @@
           <template v-slot:button-content>
             <b-avatar variant="primary" size="28" src="~/static/img/defaultAvatar.jpg"></b-avatar>
           </template>
-          <b-nav-item href="/login">{{ $t('user.login') }}</b-nav-item>
-          <b-nav-item href="/signup">{{ $t('user.signup') }}</b-nav-item>
+          <b-nav-item :href="localePath({ path: '/login' })">{{ $t('user.login') }}</b-nav-item>
+          <b-nav-item :href="localePath({ path: '/signup' })">{{ $t('user.signup') }}</b-nav-item>
         </b-nav-item-dropdown>
 
         <b-nav-item-dropdown v-else right>
@@ -165,7 +160,7 @@
           <template v-slot:button-content>
             <b-avatar variant="primary" size="28" :src="userAvatar"></b-avatar>
           </template>
-          <b-dropdown-item href="/user/me">{{ this.$store.state.username }}</b-dropdown-item>
+          <b-dropdown-item :href="localePath({ path: 'user/me' })">{{ this.$store.state.username }}</b-dropdown-item>
           <b-dropdown-item>{{ $t('user.logout') }}</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
@@ -254,18 +249,20 @@ export default {
         return
       }
       if (this.iptVal !== '') {
-        this.$router
-          .push({
+        this.$router.push(
+          this.localePath({
             path: '/home',
             query: { keyword: this.iptVal, qtype: this.searchType }
           })
-          .catch((err) => {
-            return err
-          })
+        )
       } else {
         // 对于在 home 页面时无参数搜索的兼容
         if (JSON.stringify(this.$route.query) === '{}') return
-        this.$router.push({ path: '/home' })
+        this.$router.push(
+          this.localePath({
+            path: '/home'
+          })
+        )
       }
     },
     // 获取未读通知数量
@@ -313,6 +310,7 @@ export default {
     border: 1px solid #e0e0e0;
     border-radius: 15px;
     .search-select {
+      width: 60px;
       margin-right: 0.6rem;
     }
   }
