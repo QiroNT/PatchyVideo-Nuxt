@@ -18,8 +18,8 @@
     },
 
     "search": {
-      "tag_text": "标签/文本",
-      "text": "仅文本",
+      "tag_text": "标签",
+      "text": "文本",
       "prompt": "请输入标签",
       "button": "搜索"
     },
@@ -97,7 +97,7 @@
 </i18n>
 
 <template>
-  <b-navbar toggleable="md">
+  <b-navbar toggleable="lg">
     <!-- 退出登录的弹出框 -->
     <!-- <el-dialog :title="$t('prompt.msg')" :modal-append-to-body="false" :visible.sync="dialogVisible" width="30%">
       <p>{{ $t('user.logout_prompt') }}</p>
@@ -116,7 +116,7 @@
     <b-collapse id="nav-collapse" is-nav>
       <!-- 左侧导航栏 -->
       <b-navbar-nav>
-        <b-nav-item :href="localePath({ path: '/home' })" @click="cleanIptV">{{ $t('navbar.index') }}</b-nav-item>
+        <b-nav-item :href="localePath({ path: '/home' })">{{ $t('navbar.index') }}</b-nav-item>
         <b-nav-item :href="localePath({ path: '/lists' })">{{ $t('navbar.playlist') }}</b-nav-item>
         <b-nav-item :href="localePath({ path: '/postvideo' })">{{ $t('navbar.postvideo') }}</b-nav-item>
         <b-nav-item :href="localePath({ path: '/edittag' })">{{ $t('navbar.edittag') }}</b-nav-item>
@@ -124,10 +124,27 @@
       </b-navbar-nav>
       <!-- 右侧导航栏 -->
       <b-navbar-nav class="ml-auto">
-        <!-- <b-nav-form>
-          <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-          <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-        </b-nav-form> -->
+        <b-nav-form>
+          <b-input-group size="sm" class="top-search-bar">
+            <b-input-group-prepend class="align-items-center ml-2 mr-2">
+              <b-icon icon="search"></b-icon>
+            </b-input-group-prepend>
+            <b-form-input
+              v-model="iptVal"
+              placeholder="搜索视频"
+              class="search-input"
+              @keyup.enter="gotoHome"
+            ></b-form-input>
+            <b-input-group-append>
+              <b-form-select
+                v-model="searchType"
+                size="sm"
+                :options="searchTypes"
+                class="search-select"
+              ></b-form-select>
+            </b-input-group-append>
+          </b-input-group>
+        </b-nav-form>
 
         <!-- <b-nav-item-dropdown text="Lang" right>
           <b-dropdown-item href="#">EN</b-dropdown-item>
@@ -139,7 +156,7 @@
           <template v-slot:button-content>
             <b-avatar variant="primary" size="28" src="~/static/img/defaultAvatar.jpg"></b-avatar>
           </template>
-          <b-nav-item href="/login" @click="login">{{ $t('user.login') }}</b-nav-item>
+          <b-nav-item href="/login">{{ $t('user.login') }}</b-nav-item>
           <b-nav-item href="/signup">{{ $t('user.signup') }}</b-nav-item>
         </b-nav-item-dropdown>
 
@@ -149,7 +166,7 @@
             <b-avatar variant="primary" size="28" :src="userAvatar"></b-avatar>
           </template>
           <b-dropdown-item href="/user/me">{{ this.$store.state.username }}</b-dropdown-item>
-          <b-dropdown-item @click="dialogVisible = true">{{ $t('user.logout') }}</b-dropdown-item>
+          <b-dropdown-item>{{ $t('user.logout') }}</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-collapse>
@@ -172,13 +189,18 @@ export default {
       iptVal: '',
       // 搜索框的内容，在自动补全的时候作为备份使用，防止搜索框内容被清空
       // ps：iptVal2在计算属性里，所以请勿随便更改变量名
-      iptVal3: '',
+      // iptVal3: '',
       // 进行搜索的时候关键字的开头位置(起始位置)
       startlocation: 0,
       // 进行搜索的时候光标的位置(终止位置)
       endlocation: 0,
       // 退出登录时退出框处于加载状态的判断
       loading: false,
+      // 类型
+      searchTypes: [
+        { value: 'tag', text: this.$t('search.tag_text') },
+        { value: 'text', text: this.$t('search.text') }
+      ],
       // 网站推荐栏以及关键字推荐栏
       sites: [
         { tag: 'site:acfun', cat: 6, cnt: null },
@@ -202,11 +224,7 @@ export default {
     }
   },
   computed: {
-    // 搜索的关键字
-    iptVal2() {
-      return this.$store.state.TopNavbarSearching
-    },
-    // 搜索的关键字
+    // 头像
     userAvatar() {
       if (this.$store.state.userAvatar === 'default') {
         return require('~/static/img/defaultAvatar.jpg')
@@ -215,87 +233,14 @@ export default {
       }
     }
   },
-  watch: {
-    iptVal2() {
-      this.iptVal = this.iptVal2
-    }
-  },
+  watch: {},
   created() {},
-  mounted() {
-    // 查看是否在别的设备上登录过
-    if (this.$store.state.ifTruelyLogin === 0) {
-      this.checkUser()
-    }
-    // this.getCookie()
-    // 查看是否登录
-    if (JSON.stringify(this.$store.state.username) !== 'null' && this.$store.state.username !== '') {
-      this.isLogin = true
-      if (this.$route.path !== '/messages') this.getUnreadCount()
-      // 每2min查询一次未读消息
-      // 注意,这里的this.getUnreadCount不能加括号!
-      this.queryMessages = setInterval(this.getUnreadCount, 120000)
-    }
-    this.iptVal = this.iptVal2
-  },
+  mounted() {},
   updated() {},
   methods: {
-    // 测试用户的登录状态
-    checkUser() {
-      this.$axios({
-        method: 'post',
-        url: 'be/user/whoami',
-        data: {}
-      }).then((result) => {
-        if (result.data.data === 'UNAUTHORISED_OPERATION' && this.getCookie()) {
-          this.$axios({
-            method: 'post',
-            url: '/be/logout.do',
-            data: {}
-          }).then((result) => {
-            this.open(this.$t('user.login_expire_prompt'))
-            this.isLogin = false
-            // 清除所有session值(退出登录)
-            sessionStorage.clear()
-            // 清除用户名
-            this.$store.commit('clearUserName')
-            // 清除本地数据
-            localStorage.setItem('username', '')
-            // 清除cookie
-            this.clearCookie()
-            // 改变用户登录状态
-            this.$store.commit('changeifTruelyLogin', '2')
-          })
-        } else {
-          this.$store.commit('changeifTruelyLogin', '1')
-        }
-      })
-    },
     // 登录跳转
     login() {
       this.$store.commit('changeifRouter', '0')
-    },
-    // 退出时清除所有数据
-    cleanLocalStorage() {
-      this.loading = true
-      this.$axios({
-        method: 'post',
-        url: '/be/logout.do',
-        data: {}
-      }).then((result) => {
-        this.isLogin = false
-        // 清除所有 session 值(退出登录)
-        sessionStorage.clear()
-        // 清除用户名
-        this.$store.commit('clearUserName')
-        // 清除本地数据
-        localStorage.setItem('username', '')
-        // 清除 cookie
-        this.clearCookie()
-        // 刷新界面
-        location.reload()
-        this.loading = false
-        this.dialogVisible = false
-      })
     },
     // 跳转至个人界面
     gotoUserPage() {
@@ -323,50 +268,6 @@ export default {
         this.$router.push({ path: '/home' })
       }
     },
-    // 清除搜索结果
-    cleanIptV() {
-      this.$store.commit('getTopNavbarSearching', '')
-      // this.reload();
-    },
-    // 清除 cookie
-    // clearCookie() {
-    //   this.setCookie('', -1)
-    //   this.setCookie('session', -1)
-    //   this.setCookie('userAvatar', -1)
-    // },
-    // // 设置 cookie
-    // // 储存变量为 username
-    // setCookie(username, days) {
-    //   const date = new Date() // 获取时间
-    //   date.setTime(date.getTime() + 24 * 60 * 60 * 1000 * days) // 保存的天数
-    //   // 字符串拼接 cookie
-    //   window.document.cookie = 'username' + ':' + username + ';path=/;expires=' + date.toGMTString()
-    //   window.document.cookie = 'userAvatar' + '=' + username + ';path=/;expires=' + date.toGMTString()
-    // },
-    // 获取 cookie
-    // getCookie() {
-    //   if (document.cookie.length > 0) {
-    //     const arr = document.cookie.split('; ')
-    //     for (let i = 0; i < arr.length; i++) {
-    //       const arr3 = arr[i].split('=')
-    //       // 判断查找相对应的值
-    //       if (arr3[0] === 'userAvatar') {
-    //         this.$store.commit('getUserAvatar', arr3[1])
-    //       }
-    //       const arr2 = arr[i].split(':')
-    //       // 判断查找相对应的值
-    //       if (arr2[0] === 'username') {
-    //         if (arr2[1] !== '') {
-    //           this.isLogin = true
-    //           this.$store.commit('getUserName', arr2[1])
-    //         }
-    //       }
-    //     }
-    //     return true
-    //   }
-    //   this.$store.commit('getUserName', '')
-    //   return false
-    // },
     // 获取未读通知数量
     getUnreadCount() {
       this.$axios({
@@ -380,164 +281,96 @@ export default {
         .catch((_error) => {
           // console.log(error)
         })
-    },
-    // 搜索输入框内的搜索文字是否包含网站内容
-    createFilter(query) {
-      return (sites) => {
-        return sites.tag.toLowerCase().indexOf(query.toLowerCase()) === 0
-      }
-    },
-    // 搜索输入框内的搜索文字，返回搜索关键字所在的起始位置
-    match(text) {
-      let i = text.length
-      while (i--) {
-        if (
-          text.charAt(i) === ' ' ||
-          text.charAt(i) === '\t' ||
-          text.charAt(i) === '\n' ||
-          text.charAt(i) === '\v' ||
-          text.charAt(i) === '\f' ||
-          text.charAt(i) === '\r' ||
-          // 把括号转化成ascII码判断,否则谜之报错
-          text.charAt(i).charCodeAt() === 41
-        ) {
-          return i + 1
-        } else if (text.charAt(i).charCodeAt() === 40) {
-          if (i > 0 && text.charAt(i - 1) === '_') {
-            continue
-          } else {
-            return i + 1
-          }
-        }
-      }
-      return 0
-    },
-    // 判断字符串是否全为空格
-    isNull(str) {
-      if (str === '') return true
-      const re = /^[ ]+$/
-      return re.test(str)
-    },
-    ConvertLangRes(langs, hastran = true) {
-      if (!langs) return
-      const LangList = [
-        { id: 1, lang: 'zh-Hans' },
-        { id: 2, lang: 'zh-Hant' },
-        { id: 5, lang: 'en-US' },
-        { id: 10, lang: 'ja' }
-      ]
-      const level = [10, 5, 1, 2]
-      let Lang = ''
-      let mainLang = ''
-      let subLang = ''
-      // 经过一系列计算得出主副语言
-
-      // 匹配当前语言的 ID
-      let CurrLangID = LangList.find((x) => {
-        return x.lang === this.$i18n.locale
-      })
-      CurrLangID = CurrLangID ? CurrLangID.id : 1
-
-      // 匹配对应 ID 的内容
-      let CurrLangWord = langs.find((x) => {
-        return x.l === CurrLangID
-      })
-      if (!CurrLangWord) {
-        for (let i = 0; i < level.length; i++) {
-          CurrLangWord = langs.find((x) => {
-            return x.l === level[i]
-          })
-          if (CurrLangWord) break
-        }
-      }
-      mainLang = CurrLangWord.w
-
-      if (hastran) {
-        // 副语言匹配
-        // 优先级：日语，英语，简体中文，繁体中文
-        let SubLangWord = null
-        for (let i = 0; i < level.length; i++) {
-          if (level[i] === CurrLangWord.l) continue
-          SubLangWord = langs.find((x) => {
-            return x.l === level[i]
-          })
-          if (SubLangWord) break
-        }
-        subLang = SubLangWord ? SubLangWord.w : mainLang
-
-        // 合成语言
-        Lang = `${mainLang.replace(/_/g, ' ')}`
-        Lang += `<span style='font-size:8px;color: gray;display: block;'>${subLang.replace(/_/g, ' ')}</span>`
-      } else {
-        Lang = mainLang
-      }
-      return Lang
-    },
-    open(message) {
-      this.$message({
-        message,
-        type: 'error'
-      })
-    },
-    handleSelect2(item) {
-      // 切割字符串，并在中间加入搜索到的标签拼接成新的输入框的内容
-      const iptVal1 = this.iptVal3.slice(0, this.startlocation)
-      const iptVal2 = this.iptVal3.slice(this.endlocation)
-      const iptVal = iptVal1 + (item.tag || this.ConvertLangRes(item.langs, false)) + ' ' + iptVal2
-      this.iptVal = iptVal
-      // 光标设置焦点事件
-      $('#ipt').focus()
-      this.infoTipMark = true
     }
   }
 }
 </script>
 
 <style scoped lang="less">
-.top-navbar {
-  padding: 5px 5%;
-  // width: 90%;
-  display: flex;
-  display: -webkit-flex;
-  align-items: center;
-  justify-content: space-between;
-  overflow: hidden;
-  position: relative;
-  background-color: rgb(255, 255, 255);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
-}
-.iconAndTitle {
-  display: flex;
-  display: -webkit-flex;
-  align-items: center;
-}
 .patchyvideo-icon {
   height: 30px;
 }
-.patchyvideo-title {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+.top-search-bar {
+  .search-input {
+    padding: 0px;
+    border: none;
+  }
+  .search-input:focus {
+    border: none;
+    box-shadow: none;
+  }
+  .search-select {
+    padding: 0px;
+    border: none;
+  }
+  .search-select:focus {
+    border: none;
+    box-shadow: none;
+  }
 }
-.nav_left {
-  display: flex;
-  display: -webkit-flex;
-  flex-direction: row;
-  justify-content: space-around;
+@media (max-width: 979px) {
+  .top-search-bar {
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    .search-select {
+      margin-right: 0.6rem;
+    }
+  }
 }
-.navItem {
-  margin: 10px;
-  font-size: 18px;
+@media (min-width: 979px) {
+  .top-search-bar {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ffffff;
+    border-radius: 15px;
+    animation-name: leave-border;
+    animation-duration: 1s;
+    .search-input {
+      transition: all 1s;
+      width: 0px;
+      border: none;
+    }
+    .search-select {
+      transition: all 1s;
+      width: 0px;
+      border: none;
+      border-radius: 15px;
+    }
+  }
+  .top-search-bar:hover,
+  .top-search-bar:focus-within {
+    border-color: #e0e0e0;
+    animation-name: enter-border;
+    animation-duration: 1s;
+    .search-input {
+      width: 120px;
+    }
+    .search-select {
+      width: 60px;
+    }
+  }
 }
-.navItem a {
-  color: rgb(46, 46, 46);
+@keyframes enter-border {
+  0% {
+    border-color: #ffffff;
+  }
+  25% {
+    border-color: #e0e0e0;
+  }
+  100% {
+    border-color: #e0e0e0;
+  }
 }
-.navItem a:hover {
-  color: rgb(255, 166, 251);
-}
-
-.search-bar-query .el-select {
-  width: 110px;
+@keyframes leave-border {
+  0% {
+    border-color: #e0e0e0;
+  }
+  75% {
+    border-color: #e0e0e0;
+  }
+  100% {
+    border-color: #ffffff;
+  }
 }
 
 .loginUser {

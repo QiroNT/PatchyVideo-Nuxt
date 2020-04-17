@@ -55,7 +55,6 @@ export default {
     'bootstrap-vue/nuxt',
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
-    '@nuxtjs/proxy',
     // Doc: https://github.com/nuxt-community/dotenv-module
     '@nuxtjs/dotenv',
     // Doc: https://bootstrap-vue.js.org/docs
@@ -141,7 +140,6 @@ export default {
    ** Build configuration
    */
   build: {
-    vendor: ['jquery'],
     plugins: [
       new BundleAnalyzerPlugin({
         analyzerPort: 0,

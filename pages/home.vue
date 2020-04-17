@@ -53,7 +53,7 @@
 <template>
   <div>
     <!-- home 页面的正文 -->
-    <b-tabs v-model="activeTab" card nav-class="tab-class">
+    <b-tabs v-model="activeTab" content-class="mt-3" nav-class="tab-class">
       <!-- 主页 -->
       <b-tab :title="labelInfo[0]" active lazy>
         <!-- 正文 -->
@@ -188,9 +188,9 @@
                       <!-- 简介 -->
                       <p
                         class="d-none d-md-block detail-p"
-                        :title="toGMT(item.item.upload_time.$date) + '\n' + item.item.desc"
+                        :title="toGMT(item.item.upload_time.$date) + '\n' + (item.item.desc || '此视频没有简介哦~')"
                       >
-                        {{ item.item.desc }}
+                        {{ item.item.desc || '此视频没有简介哦~' }}
                       </p>
                       <!-- 底部信息 -->
                       <div class="time-up">{{ toGMT(item.item.upload_time.$date) }}</div>

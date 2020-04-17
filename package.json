@@ -1,6 +1,6 @@
 {
   "name": "patchyvideo-nuxt",
-  "version": "0.1.0-alpha4",
+  "version": "0.1.0-alpha5",
   "description": "Nuxt.js based PatchyVideo",
   "author": "nt_zi_mu",
   "private": true,
@@ -19,7 +19,7 @@
     "bootstrap-vue": "^2.11.0",
     "jquery": "^3.5.0",
     "nuxt": "^2.0.0",
-    "nuxt-i18n": "^6.8.1",
+    "nuxt-i18n": "^6.9.1",
     "vue-typed-js": "^0.1.2"
   },
   "devDependencies": {
@@ -37,6 +37,6 @@
     "node-sass": "^4.13.1",
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
-    "scss-loader": "0.0.1"
+    "webpack-bundle-analyzer": "^3.7.0"
   }
 }
