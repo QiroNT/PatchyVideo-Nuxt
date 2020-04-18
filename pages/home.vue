@@ -52,175 +52,146 @@
 
 <template>
   <div>
-    <!-- home 页面的正文 -->
-    <b-tabs v-model="activeTab" content-class="mt-3" nav-class="tab-class">
-      <!-- 主页 -->
-      <b-tab :title="labelInfo[0]" active lazy>
-        <!-- 正文 -->
-        <div class="container">
-          <div class="row">
-            <!-- 左栏（热门标签） -->
-            <div class="col-xl-3 d-none d-xl-block">
-              <left-bar :title="videoListOptions.ifSearch ? '相关标签' : '热门标签'" :tags="videoListData.tags" />
+    <!-- 正文 -->
+    <div class="container">
+      <div class="row">
+        <!-- 左栏（热门标签） -->
+        <div class="col-xl-2 d-none d-xl-block">
+          <left-bar :title="ifSearch ? '相关标签' : '热门标签'" :tags="tags" />
+        </div>
+        <!-- 视频区 -->
+        <div class="col-xl-10">
+          <!-- 播放列表抬头 -->
+          <div class="row video-list-header">
+            <!-- 数量显示 -->
+            <div class="col-auto">
+              <span v-if="loading">
+                <b-spinner small></b-spinner
+                ><vue-typed-js :strings="['少女祈祷中']" :type-speed="100" style="display:inline-block;"
+                  ><span class="typing"></span
+                ></vue-typed-js>
+              </span>
+              <span v-else>
+                <span v-if="maxcount">{{ $t('page_count', { count: count2, maxcount: maxcount }) }}</span>
+                <span v-else>{{ $t('no_result') }}</span>
+              </span>
             </div>
-            <!-- 视频区 -->
-            <div class="col-xl-9">
-              <!-- 播放列表抬头 -->
-              <div class="row video-list-header">
-                <!-- 数量显示 -->
-                <div class="col-auto">
-                  <span v-if="videoListOptions.loading">
-                    <b-spinner small></b-spinner
-                    ><vue-typed-js :strings="['少女祈祷中']" :type-speed="100" style="display:inline-block;"
-                      ><span class="typing"></span
-                    ></vue-typed-js>
-                  </span>
-                  <span v-else>
-                    <span v-if="videoListData.maxcount">{{
-                      $t('page_count', { count: videoListData.count2, maxcount: videoListData.maxcount })
-                    }}</span>
-                    <span v-else>{{ $t('no_result') }}</span>
-                  </span>
+            <!-- 设置按钮 -->
+            <b-icon v-b-toggle.video-showing-settings-sidebar icon="gear"></b-icon>
+            <b-sidebar id="video-showing-settings-sidebar" title="显示设定" shadow>
+              <div class="p-3">
+                <!-- 黑名单提示 -->
+                <p>
+                  <span class="blacklist-prompt">{{ $t('blacklist_prompt') }}</span>
+                </p>
+                <!-- 视频排列顺序 -->
+                <h5>视频排列顺序</h5>
+                <b-form-select v-model="couponSelected" :options="options" size="lg"></b-form-select>
+                <!-- 站点选择 -->
+                <h5>显示站点</h5>
+                <div>
+                  <span
+                    :class="'badge ' + (visibleSites.includes('') ? 'badge-info' : 'badge-secondary')"
+                    style="cursor:pointer;margin:0 5px"
+                    @click="(e) => onSitesChange()"
+                    >全部</span
+                  >
+                  <span
+                    v-for="item in allSites"
+                    :key="item.id"
+                    :class="'badge ' + (visibleSites.includes(item.value) ? 'badge-info' : 'badge-secondary')"
+                    style="cursor:pointer;margin:0 5px"
+                    @click="(e) => onSitesChange(item.value)"
+                    >{{ item.text }}</span
+                  >
                 </div>
-                <!-- 设置按钮 -->
-                <b-icon v-b-toggle.video-showing-settings-sidebar icon="gear"></b-icon>
-                <b-sidebar id="video-showing-settings-sidebar" title="显示设定" shadow>
-                  <div class="p-3">
-                    <!-- 黑名单提示 -->
-                    <p>
-                      <span class="blacklist-prompt">{{ $t('blacklist_prompt') }}</span>
+                <!-- 是否显示已删除视频 -->
+                <b-form-checkbox v-model="checked" class="show-deleted">{{ $t('show_deleted') }}</b-form-checkbox>
+                <b-button variant="primary" block @click="getListVideo()">应用</b-button>
+              </div>
+            </b-sidebar>
+          </div>
+          <!-- 播放列表正文 -->
+          <div class="video-list">
+            <b-alert variant="danger" dismissible fade :show="showErrorAlert" @dismissed="showErrorAlert = false">
+              {{ errorAlert }}
+            </b-alert>
+            <div v-for="item in listvideo" :key="item._id.$oid" class="list-item">
+              <div class="row video-item">
+                <!-- 封面图片 -->
+                <div class="col-sm-4 col-lg-3">
+                  <div class="video-thumbnail">
+                    <nuxt-link
+                      target="_blank"
+                      :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
+                      tag="a"
+                    >
+                      <!-- <img :src="'/images/covers/' + item.item.cover_image" height="100%" /> -->
+                      <bilibili-cover
+                        v-if="item.item.site === 'bilibili'"
+                        :aid="parseInt(item.item.unique_id.replace('bilibili:av', ''))"
+                        :cover-image="item.item.cover_image"
+                      ></bilibili-cover>
+                      <b-aspect
+                        v-else
+                        aspect="8:5"
+                        :style="
+                          'background:url(/images/covers/' +
+                            item.item.cover_image +
+                            ') center center no-repeat;background-size:100% 100%'
+                        "
+                      ></b-aspect>
+                    </nuxt-link>
+                  </div>
+                </div>
+                <!-- 视频信息 -->
+                <div class="col-sm-8 col-lg-9 video-detail">
+                  <!-- 图标和标题 -->
+                  <div class="title-div">
+                    <img
+                      :src="require('~/static/img/' + item.item.site + '.png')"
+                      width="16px"
+                      style="display:inline;"
+                    />
+                    <p class="title-p">
+                      <nuxt-link
+                        target="_blank"
+                        :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
+                        tag="a"
+                        >{{ item.item.title }}</nuxt-link
+                      >
                     </p>
-                    <!-- 视频排列顺序 -->
-                    <h5>视频排列顺序</h5>
-                    <b-form-select
-                      v-model="videoListOptions.couponSelected"
-                      :options="videoListOptions.options"
-                      size="lg"
-                    ></b-form-select>
-                    <!-- 站点选择 -->
-                    <h5>显示站点</h5>
-                    <div>
-                      <span
-                        :class="
-                          'badge ' + (videoListOptions.visibleSites.includes('') ? 'badge-info' : 'badge-secondary')
-                        "
-                        style="cursor:pointer;margin:0 5px"
-                        @click="(e) => onSitesChange()"
-                        >全部</span
-                      >
-                      <span
-                        v-for="item in videoListOptions.allSites"
-                        :key="item.id"
-                        :class="
-                          'badge ' +
-                            (videoListOptions.visibleSites.includes(item.value) ? 'badge-info' : 'badge-secondary')
-                        "
-                        style="cursor:pointer;margin:0 5px"
-                        @click="(e) => onSitesChange(item.value)"
-                        >{{ item.text }}</span
-                      >
-                    </div>
-                    <!-- 是否显示已删除视频 -->
-                    <b-form-checkbox v-model="videoListOptions.checked" class="show-deleted">{{
-                      $t('show_deleted')
-                    }}</b-form-checkbox>
-                    <b-button variant="primary" block @click="getListVideo()">应用</b-button>
                   </div>
-                </b-sidebar>
-              </div>
-              <!-- 播放列表正文 -->
-              <div class="video-list">
-                <b-alert
-                  variant="danger"
-                  dismissible
-                  fade
-                  :show="videoListData.showErrorAlert"
-                  @dismissed="videoListData.showErrorAlert = false"
-                >
-                  {{ videoListData.errorAlert }}
-                </b-alert>
-                <div v-for="item in videoListData.listvideo" :key="item._id.$oid" class="list-item">
-                  <div class="row video-item">
-                    <!-- 封面图片 -->
-                    <div class="col-sm-4 col-lg-3">
-                      <div class="video-thumbnail">
-                        <nuxt-link
-                          target="_blank"
-                          :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
-                          tag="a"
-                        >
-                          <!-- <img :src="'/images/covers/' + item.item.cover_image" height="100%" /> -->
-                          <bilibili-cover
-                            v-if="item.item.site === 'bilibili'"
-                            :aid="parseInt(item.item.unique_id.replace('bilibili:av', ''))"
-                            :cover-image="item.item.cover_image"
-                          ></bilibili-cover>
-                          <b-aspect
-                            v-else
-                            aspect="8:5"
-                            :style="
-                              'background:url(/images/covers/' +
-                                item.item.cover_image +
-                                ') center center no-repeat;background-size:100% 100%'
-                            "
-                          ></b-aspect>
-                        </nuxt-link>
-                      </div>
-                    </div>
-                    <!-- 视频信息 -->
-                    <div class="col-sm-8 col-lg-9 video-detail">
-                      <!-- 图标和标题 -->
-                      <div class="title-div">
-                        <img
-                          :src="require('~/static/img/' + item.item.site + '.png')"
-                          width="16px"
-                          style="display:inline;"
-                        />
-                        <p class="title-p">
-                          <nuxt-link
-                            target="_blank"
-                            :to="localePath({ path: '/video', query: { id: item._id.$oid } })"
-                            tag="a"
-                            >{{ item.item.title }}</nuxt-link
-                          >
-                        </p>
-                      </div>
-                      <!-- 简介 -->
-                      <p
-                        class="d-none d-md-block detail-p"
-                        :title="toGMT(item.item.upload_time.$date) + '\n' + (item.item.desc || '此视频没有简介哦~')"
-                      >
-                        {{ item.item.desc || '此视频没有简介哦~' }}
-                      </p>
-                      <!-- 底部信息 -->
-                      <div class="time-up">{{ toGMT(item.item.upload_time.$date) }}</div>
-                    </div>
-                    <div class="rating-box d-none d-lg-block">
-                      <span class="rating" title="评分">{{
-                        (item.total_rating / item.total_rating_user || 0).toFixed(1)
-                      }}</span>
-                    </div>
-                  </div>
+                  <!-- 简介 -->
+                  <p
+                    class="d-none d-md-block detail-p"
+                    :title="toGMT(item.item.upload_time.$date) + '\n' + (item.item.desc || '此视频没有简介哦~')"
+                  >
+                    {{ item.item.desc || '此视频没有简介哦~' }}
+                  </p>
+                  <!-- 底部信息 -->
+                  <div class="time-up">{{ toGMT(item.item.upload_time.$date) }}</div>
                 </div>
-
-                <!-- 分页器 -->
-                <b-pagination
-                  v-model="videoListOptions.page"
-                  limit="9"
-                  :total-rows="videoListData.maxcount"
-                  :per-page="videoListData.count"
-                  align="center"
-                ></b-pagination>
+                <div class="rating-box d-none d-lg-block">
+                  <span class="rating" title="评分">{{
+                    (item.total_rating / item.total_rating_user || 0).toFixed(1)
+                  }}</span>
+                </div>
               </div>
             </div>
+
+            <!-- 分页器 -->
+            <b-pagination
+              v-model="page"
+              limit="9"
+              :total-rows="maxcount"
+              :per-page="count"
+              align="center"
+            ></b-pagination>
           </div>
         </div>
-      </b-tab>
-      <!-- 订阅 -->
-      <b-tab v-if="isLogin()" :title="labelInfo[1]" lazy>
-        <subscribed v-if="activeName === 'second'"></subscribed>
-      </b-tab>
-    </b-tabs>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -235,79 +206,94 @@ export default {
     leftBar,
     bilibiliCover
   },
+  async asyncData(content) {
+    const data = {}
+    const config = content.app.$ppl.configFromRoute(content.route, content.app.i18n)
+    // 设置转义
+    data.ifSearch = !!config.searchKeyWord
+    data.page = config.page
+    data.count = config.page_size
+    data.couponSelected = config.order
+    data.checked = !config.hide_placeholder
+    data.visibleSites = config.visibleSites
+    // 请求数据
+    try {
+      const videoResult = await content.app.$ppl.listVideo(content.$axios, config)
+      // 整理数据
+      const trdVideoData = content.app.$pvideo.trVideoData(data, videoResult)
+      for (const i in trdVideoData) {
+        data[i] = trdVideoData[i]
+      }
+    } catch (e) {
+      data.showErrorAlert = true
+      data.errorAlert = e.message
+    }
+    data.loading = false
+    return data
+  },
   data() {
     // this.$i18n.locale = localStorage.getItem('lang')
     return {
-      activeTab: 0,
-      label: ['主页'],
-      labelInfo: ['主页', '订阅'],
-      videoListOptions: {
-        // 视频列表的排序规则
-        options: [
-          { value: 'latest', text: this.$t('latest') },
-          { value: 'oldest', text: this.$t('oldest') },
-          { value: 'video_latest', text: this.$t('latest_video') },
-          { value: 'video_oldest', text: this.$t('oldest_video') }
-        ],
-        // 当前视频列表的排列顺序
-        couponSelected: 'latest',
-        // 当前页数
-        page: 1,
-        // 每一页的视频数量
-        count: 20,
-        // 视频列表是否属于加载状态的判断
-        loading: true,
-        // 是否渲染的是搜索的数据，默认 false 为主页数据
-        ifSearch: false,
-        // 判断是否执行查询,有时候页面会进行多次查询浪费资源
-        // ifQuest: true,
-        // 判断当前页数是不是被搜索事件改变的,即：当我跳转到其他页数，此时再搜索新的关键词，新的页数会被置为 1。
-        // 这时会触发 page 监听的事件，重新请求搜索的数据，因为根据关键词的改变也会重新请求的数据，会造成资源浪费。
-        pageMark: false,
-        // 是否显示隐藏视频
-        checked: false,
-        visibleSites: [''],
-        allSites: [
-          { text: 'Bilibili', value: 'bili' },
-          { text: 'Nicovideo', value: 'nico' },
-          { text: 'YouTube', value: 'ytb' },
-          { text: 'Twitter', value: 'twitter' },
-          { text: 'Acfun', value: 'acfun' },
-          { text: '站酷', value: 'zcool' },
-          { text: 'IPFS', value: 'ipfs' },
-          { text: 'weibo', value: 'weibo-mobile' }
-        ]
-      },
-      videoListData: {
-        // 请求到的标签列表
-        tags: [],
-        // 请求到的视频列表（本页的视频列表）
-        listvideo: [],
-        // 搜索关键字
-        searchKeyWord: '',
-        // 视频的全部数量
-        maxcount: 0,
-        // 全部分页数
-        maxpage: 1,
-        // 每一页视频的真实数量
-        count2: 0,
-        // 错误提示框
-        showErrorAlert: false,
-        errorAlert: ''
-      },
+      // 视频列表的排序规则
+      options: [
+        { value: 'latest', text: this.$t('latest') },
+        { value: 'oldest', text: this.$t('oldest') },
+        { value: 'video_latest', text: this.$t('latest_video') },
+        { value: 'video_oldest', text: this.$t('oldest_video') }
+      ],
+      // 当前视频列表的排列顺序
+      couponSelected: 'latest',
+      // 当前页数
+      page: 1,
+      // 每一页的视频数量
+      count: 20,
+      // 视频列表是否属于加载状态的判断
+      loading: true,
+      // 是否渲染的是搜索的数据，默认 false 为主页数据
+      ifSearch: false,
+      // 判断是否执行查询,有时候页面会进行多次查询浪费资源
+      // ifQuest: true,
+      // 判断当前页数是不是被搜索事件改变的,即：当我跳转到其他页数，此时再搜索新的关键词，新的页数会被置为 1。
+      // 这时会触发 page 监听的事件，重新请求搜索的数据，因为根据关键词的改变也会重新请求的数据，会造成资源浪费。
+      pageMark: false,
+      // 是否显示隐藏视频
+      checked: false,
+      visibleSites: [''],
+      allSites: [
+        { text: 'Bilibili', value: 'bili' },
+        { text: 'Nicovideo', value: 'nico' },
+        { text: 'YouTube', value: 'ytb' },
+        { text: 'Twitter', value: 'twitter' },
+        { text: 'Acfun', value: 'acfun' },
+        { text: '站酷', value: 'zcool' },
+        { text: 'IPFS', value: 'ipfs' },
+        { text: 'weibo', value: 'weibo-mobile' }
+      ],
+      // 请求到的标签列表
+      tags: [],
+      // 请求到的视频列表（本页的视频列表）
+      listvideo: [],
+      // 搜索关键字
+      searchKeyWord: '',
+      // 视频的全部数量
+      maxcount: 0,
+      // 全部分页数
+      maxpage: 1,
+      // 每一页视频的真实数量
+      count2: 0,
+      // 错误提示框
+      showErrorAlert: false,
+      errorAlert: '',
       GMT: 99 // 99 的时候为当前时区
     }
   },
   computed: {},
   watch: {
     $route(newV, oldV) {
-      this.activeTab = 0
       this.getListVideo()
     }
   },
-  created() {
-    this.getListVideo()
-  },
+  created() {},
   mounted() {},
   updated() {},
   methods: {
@@ -319,66 +305,35 @@ export default {
     },
     getListVideo() {
       // 先使页面处于加载状态
-      this.videoListOptions.loading = true
-      this.videoListOptions.ifSearch = !!this.$route.query.keyword
+      this.loading = true
+      this.maxcount = 0
+      this.maxpage = 1
+      this.count2 = 0
+      this.tags = []
+      this.listvideo = []
+      this.ifSearch = !!this.$route.query.keyword
       this.$pvideo
         .listVideo({
           searchKeyWord: this.$route.query.keyword || '',
           qtype: this.$route.query.qtype || 'tag',
-          page: this.videoListOptions.page,
-          page_size: this.videoListOptions.count,
-          order: this.videoListOptions.couponSelected,
-          hide_placeholder: !this.videoListOptions.checked,
-          visibleSites: this.videoListOptions.visibleSites,
+          page: this.page,
+          page_size: this.count,
+          order: this.couponSelected,
+          hide_placeholder: !this.checked,
+          visibleSites: this.visibleSites,
           locale: this.$i18n.locale
         })
         .then((result) => {
-          this.videoListData.maxcount = result.data.data.count
-          // 取得总页数制作分页
-          this.videoListData.maxpage = Math.ceil(result.data.data.count / this.videoListOptions.count)
-          if (this.videoListData.maxpage < this.videoListOptions.page) {
-            this.videoListOptions.page = 1
+          // 整理数据
+          const trdVideoData = this.$pvideo.trVideoData(this, result)
+          for (const i in trdVideoData) {
+            try {
+              this[i] = trdVideoData[i]
+            } catch (e) {}
           }
-          this.$store.commit('getMaxPage', this.videoListData.maxpage)
-          this.videoListData.listvideo = result.data.data.videos
-          /* 排序处理 */
-          // 获得热门标签
-          const tags = result.data.data.tags
-          if (result.data.data.tag_pops) {
-            const tagswithcount = result.data.data.tag_pops
-            // 排序热门标签
-            // let ntags = {}
-            // tagswithcount = Object.keys(tagswithcount)
-            //   .sort((a, b) => tagswithcount[b] - tagswithcount[a])
-            //   .forEach((key) => {
-            //     ntags[key] = tags[key]
-            //   })
-            const ntags = []
-            for (const i in tags) {
-              ntags.push({
-                name: i,
-                tagType: tags[i],
-                tagCount: tagswithcount[i]
-              })
-            }
-            this.videoListData.tags = ntags
-          } else {
-            const ntags = []
-            for (const i in tags) {
-              ntags.push({
-                name: i,
-                tagType: tags[i]
-              })
-            }
-            this.videoListData.tags = ntags
-          }
-          /* 处理结束 */
-
-          // this.tags = result.data.data.tags;
-          this.videoListData.count2 = result.data.data.videos.length
 
           // 加载结束，加载动画消失
-          this.videoListOptions.loading = false
+          this.loading = false
 
           // 回到顶部
           if ($('html').scrollTop()) {
@@ -387,26 +342,26 @@ export default {
           }
         })
         .catch((e) => {
-          this.videoListData.errorAlert = '获取视频失败：' + e.message
-          this.videoListData.showErrorAlert = true
-          this.videoListOptions.loading = false
+          this.errorAlert = '获取视频失败：' + e.message
+          this.showErrorAlert = true
+          this.loading = false
         })
     },
     onSitesChange(id = '') {
       if (id === '') {
-        this.videoListOptions.visibleSites = ['']
-      } else if (this.videoListOptions.visibleSites.includes(id)) {
-        const index = this.videoListOptions.visibleSites.indexOf(id)
-        this.videoListOptions.visibleSites.splice(index, 1)
+        this.visibleSites = ['']
+      } else if (this.visibleSites.includes(id)) {
+        const index = this.visibleSites.indexOf(id)
+        this.visibleSites.splice(index, 1)
       } else {
-        this.videoListOptions.visibleSites.push(id)
-        const index = this.videoListOptions.visibleSites.indexOf('')
+        this.visibleSites.push(id)
+        const index = this.visibleSites.indexOf('')
         if (index > -1) {
-          this.videoListOptions.visibleSites.splice(index, 1)
+          this.visibleSites.splice(index, 1)
         }
       }
-      if (this.videoListOptions.visibleSites.length === 0) {
-        this.videoListOptions.visibleSites = ['']
+      if (this.visibleSites.length === 0) {
+        this.visibleSites = ['']
       }
     },
     showHover() {}

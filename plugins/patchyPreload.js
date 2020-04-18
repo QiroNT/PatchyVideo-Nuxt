@@ -1,4 +1,3 @@
-import axios from 'axios'
 import locale from '~/plugins/patchyDriver/locale'
 
 function rsReject(res) {
@@ -20,7 +19,20 @@ function rsReject(res) {
   }
 }
 
-function listVideo(config) {
+function configFromRoute(route, i18n) {
+  return {
+    searchKeyWord: route.query.keyword || '',
+    qtype: route.query.qtype || 'tag',
+    order: route.query.coupon || 'latest',
+    page: parseInt(route.query.page) || 1,
+    page_size: parseInt(route.query.page_count || 20),
+    hide_placeholder: route.query.showDeleted === 'true',
+    visibleSites: route.query.visibleSites ? JSON.parse(atob(route.query.visibleSites)) : [''],
+    locale: i18n.locale
+  }
+}
+
+function listVideo($axios, config) {
   let sites = ''
   const index = config.visibleSites.indexOf('')
   if (index === -1) {
@@ -41,12 +53,13 @@ function listVideo(config) {
       additional_constraint: sites,
       lang: locale.getPcode(config.locale)
     }
+    const axiosConfig = {
+      method: 'post',
+      url: '/be/queryvideo.do',
+      data: cfg
+    }
     return new Promise((resolve, reject) => {
-      axios({
-        method: 'post',
-        url: '/be/queryvideo.do',
-        data: cfg
-      })
+      $axios(axiosConfig)
         .then((result) => {
           resolve(result.data)
         })
@@ -64,13 +77,15 @@ function listVideo(config) {
       additional_constraint: sites,
       lang: locale.getPcode(config.locale)
     }
+    const axiosConfig = {
+      method: 'post',
+      url: '/be/listvideo.do',
+      data: cfg
+    }
     return new Promise((resolve, reject) => {
-      axios({
-        method: 'post',
-        url: '/be/listvideo.do',
-        data: cfg
-      })
+      $axios(axiosConfig)
         .then((result) => {
+          // 返回结果前先设置缓存
           resolve(result.data)
         })
         .catch((e) => {
@@ -81,50 +96,9 @@ function listVideo(config) {
   }
 }
 
-function trVideoData(data_, videoResult) {
-  const data = data_
-  // 总视频个数
-  data.maxcount = videoResult.data.count
-  // 总分页数
-  data.maxpage = Math.ceil(videoResult.data.count / data.count)
-  if (data.maxpage < data.page) {
-    data.page = 1
-  }
-  // 视频列表
-  data.listvideo = videoResult.data.videos
-  // 视频数
-  data.count2 = videoResult.data.videos.length
-  // 标签 & 排序
-  const tags = videoResult.data.tags
-  if (videoResult.data.tag_pops) {
-    const tagswithcount = videoResult.data.tag_pops
-    const ntags = []
-    for (const i in tags) {
-      ntags.push({
-        name: i,
-        tagType: tags[i],
-        tagCount: tagswithcount[i]
-      })
-    }
-    data.tags = ntags
-  } else {
-    const ntags = []
-    for (const i in tags) {
-      ntags.push({
-        name: i,
-        tagType: tags[i]
-      })
-    }
-    data.tags = ntags
-  }
-  return data
-}
-
 export default ({ app }, inject) => {
-  inject('pvideo', {
-    init() {},
-    fetch() {},
+  inject('ppl', {
     listVideo,
-    trVideoData
+    configFromRoute
   })
 }

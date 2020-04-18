@@ -322,14 +322,14 @@ export default {
     border-color: #ffffff;
     border-radius: 15px;
     animation-name: leave-border;
-    animation-duration: 1s;
+    animation-duration: 0.7s;
     .search-input {
-      transition: all 1s;
+      transition: all 0.7s;
       width: 0px;
       border: none;
     }
     .search-select {
-      transition: all 1s;
+      transition: all 0.7s;
       width: 0px;
       border: none;
       border-radius: 15px;
@@ -339,7 +339,7 @@ export default {
   .top-search-bar:focus-within {
     border-color: #e0e0e0;
     animation-name: enter-border;
-    animation-duration: 1s;
+    animation-duration: 0.7s;
     .search-input {
       width: 120px;
     }

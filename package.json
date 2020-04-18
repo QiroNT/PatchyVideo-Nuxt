@@ -1,6 +1,6 @@
 {
   "name": "patchyvideo-nuxt",
-  "version": "0.1.0-alpha6",
+  "version": "0.1.0-alpha7",
   "description": "Nuxt.js based PatchyVideo",
   "author": "nt_zi_mu",
   "private": true,
@@ -36,7 +36,6 @@
     "less-loader": "^5.0.0",
     "node-sass": "^4.13.1",
     "prettier": "^1.19.1",
-    "sass-loader": "^8.0.2",
-    "webpack-bundle-analyzer": "^3.7.0"
+    "sass-loader": "^8.0.2"
   }
 }

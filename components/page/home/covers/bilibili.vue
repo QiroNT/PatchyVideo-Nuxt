@@ -113,7 +113,8 @@ export default {
             this.loadStatus = true
           })
           .catch((e) => {
-            this.loadStatus = false
+            this.error = e.message
+            this.loadStatus = true
           })
       }
     }

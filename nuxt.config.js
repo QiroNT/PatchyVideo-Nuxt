@@ -1,5 +1,6 @@
 import webpack from 'webpack'
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
+
+const BASE_URL = process.env.NODE_ENV === 'production' ? 'http://localhost' : 'https://thvideo.tv'
 
 export default {
   mode: 'universal',
@@ -31,10 +32,12 @@ export default {
    ** Plugins to load before mounting the App
    */
   plugins: [
-    // Driver for basic functions
+    // patchyDriver for basic functions
     '~/plugins/patchyDriver.js',
-    // Video for Video related functions
+    // patchyVideo for Video related functions
     '~/plugins/patchyVideo.js',
+    // patchyPreload for SSR specific functions
+    '~/plugins/patchyPreload.js',
     // Typed.js
     '~/plugins/typed.js'
   ],
@@ -78,28 +81,28 @@ export default {
   },
   proxy: {
     '/v/': {
-      target: 'https://thvideo.tv/v/',
+      target: BASE_URL + '/v/',
       changeOrigin: true,
       pathRewrite: {
         '^/v/': ''
       }
     },
     '/be/': {
-      target: 'https://thvideo.tv/be/',
+      target: BASE_URL + '/be/',
       changeOrigin: true,
       pathRewrite: {
         '^/be/': ''
       }
     },
     '/images/': {
-      target: 'https://thvideo.tv/images/',
+      target: BASE_URL + '/images/',
       changeOrigin: true,
       pathRewrite: {
         '^/images/': ''
       }
     },
     '/autocomplete/ ': {
-      target: 'https://thvideo.tv/autocomplete/',
+      target: BASE_URL + '/autocomplete/',
       changeOrigin: true,
       pathRewrite: {
         '^/autocomplete/': ''
@@ -141,10 +144,6 @@ export default {
    */
   build: {
     plugins: [
-      new BundleAnalyzerPlugin({
-        analyzerPort: 0,
-        openAnalyzer: false
-      }),
       new webpack.ProvidePlugin({
         jQuery: 'jquery',
         $: 'jquery',
